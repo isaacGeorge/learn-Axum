@@ -1,37 +1,21 @@
-use axum::{
-    extract::Path,
-    routing::get,
-    Router,
-};
+use axum::{routing::get, Router, Json};
+use serde_json::json;
 
 #[tokio::main]
 async fn main() {
-    // Create a router with two routes
     let app = Router::new()
         .route("/", get(root))
-        .route("/user/{id}", get(get_user))
-        .route("/user/{user_id}/post/{post_id}", get(get_post));
+        .route("/api/hello", get(hello));
 
-    // Start the server
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
-        .await
-        .expect("Failed to bind address");
-
-    println!("🚀 Server running at http://127.0.0.1:3000");
-
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
+    println!("Backend running at http://127.0.0.1:3000");
     axum::serve(listener, app).await.unwrap();
 }
 
-// The root route handler
 async fn root() -> &'static str {
-    "Welcome to the Axum API!"
+    "Backend running 🚀"
 }
 
-// The user route handler with path parameter
-async fn get_user(Path(id): Path<u32>) -> String {
-    format!("User ID: {}", id)
-}
-
-async fn get_post(Path((user_id, post_id)): Path<(u32, u32)>) -> String {
-    format!("User {} - Post {}", user_id, post_id)
+async fn hello() -> Json<serde_json::Value> {
+    Json(json!({ "message": "Hello from Rust backend!" }))
 }
